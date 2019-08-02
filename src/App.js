@@ -6,18 +6,18 @@ class App extends Component {
   state = {
     congress: ["115", "114", "113"],
     chambers: ["House", "Senate"],
-    parties: ["Total", "Democrats", "Republicans"],
+    parties: [],
     selectedCongress: "115",
     selectedChamber: "House",
-    selectedParty: "Total",
-    isLoading:true,
-    members: []
+    selectedParty: "",
+    isLoading:true
   }
   componentDidMount() {
-    document.getElementById(this.state.selectedChamber).checked = true;
+    //document.getElementById(this.state.selectedChamber).checked = true;
+    //document.getElementById(this.state.selectedParty).checked = true;
     this.getData(this.state.selectedCongress, this.state.selectedChamber);
   }
-  getData = (congress, chamber) => {
+  getData = (congress, chamber, party) => {
     this.setState({
       isLoading:true
     });
@@ -31,12 +31,34 @@ class App extends Component {
         })
         .then(res => res.json())
         .then((result) => {
+          const parties =
+          [{
+            name:"Total",
+            members: result.results[0].members
+          },
+          {
+            name: "Democrats",
+            members: result.results[0].members.filter(m => m.party === "D")
+          },
+          {
+            name:"Republicans",
+            members: result.results[0].members.filter(m => m.party === "R")
+          }]
+          const independents = result.results[0].members.filter(m => m.party === "I");
+          if(independents.length > 0) {
+            parties.push({
+              name:"Independents",
+              members: independents
+            })
+          }
           this.setState({
-            members:[...result.results[0].members],
+            parties:parties,
+            selectedParty:"Total",
             isLoading:false
           });
-          console.log(this.state.members);
+          console.log(this.state.parties);
         })
+        .catch(error => console.log(error))
   }
   handleCongressChange = (e) => {
     this.getData(e.target.value, this.state.selectedChamber);
@@ -55,6 +77,11 @@ class App extends Component {
       selectedParty:e.target.value
     });
   }
+  isChecked = (value) => {
+    if(value === this.state.selectedParty || value === this.state.selectedChamber) return true;
+    return false;
+  }
+
   render() {
     const congressOptions = this.state.congress.map(c => {
       return (
@@ -64,33 +91,56 @@ class App extends Component {
     const chamberOptions = this.state.chambers.map(ch => {
       return (
         <div key={ch}>
-          <input type="radio" name="chamberOption" id={ch} value={ch} onChange={this.handleChamberChange}></input>
+          <input
+            type="radio"
+            name="chamberOption"
+            id={ch}
+            value={ch}
+            onChange={this.handleChamberChange}
+            defaultChecked={this.isChecked(ch)}>
+          </input>
           <label>{ch}</label>
         </div>
       )
     })
     const partyOptions = this.state.parties.map(p => {
       return (
-        <div key={p}>
-          <input type="radio" name="dataset" id={p} value={p}/>
-          <label htmlFor={p}>{p}</label>
+        <div key={p.name}>
+          <input
+            type="radio"
+            name="dataset"
+            id={p.name}
+            value={p.name}
+            onChange={this.handlePartyChange}
+            defaultChecked={this.isChecked(p.name)}
+          />
+          <label>{p.name}</label>
         </div>
       )
     })
-    return (
-      <div className="App">
-        <h1> Congress Info </h1>
-        <h3>select congress</h3>
-        <select onChange={this.handleCongressChange}>
-          {congressOptions}
-        </select>
-        <h3>select chamber</h3>
-        <div>{chamberOptions}</div>
-        <h3>select party</h3>
-        <div>{partyOptions}</div>
-        <Histogram members = {this.state.members}/>
-      </div>
-    );
+    if(this.state.isLoading) {
+      return (
+        <div>Data is loading...</div>
+      )
+    } else {
+      return (
+        <div className="App">
+          <h1> Congress Info </h1>
+          <h3>select congress</h3>
+          <select onChange={this.handleCongressChange}>
+            {congressOptions}
+          </select>
+          <h3>select chamber</h3>
+          <div>{chamberOptions}</div>
+          <h3>select party</h3>
+          <div>{partyOptions}</div>
+          <Histogram
+            totalMembers={this.state.parties.filter(p => p.name === "Total")[0]}
+            partyMembers={this.state.parties.filter(p => p.name === this.state.selectedParty)[0]}
+          />
+        </div>
+      );
+    }
   }
 }
 
