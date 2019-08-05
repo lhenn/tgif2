@@ -13,8 +13,6 @@ class App extends Component {
     isLoading:true
   }
   componentDidMount() {
-    //document.getElementById(this.state.selectedChamber).checked = true;
-    //document.getElementById(this.state.selectedParty).checked = true;
     this.getData(this.state.selectedCongress, this.state.selectedChamber);
   }
   getData = (congress, chamber, party) => {
@@ -65,6 +63,7 @@ class App extends Component {
     this.setState({
       selectedCongress:e.target.value
     });
+    console.log(e.target.value);
   }
   handleChamberChange = (e) => {
     this.getData(this.state.selectedCongress, e.target.value);
@@ -78,14 +77,26 @@ class App extends Component {
     });
   }
   isChecked = (value) => {
-    if(value === this.state.selectedParty || value === this.state.selectedChamber) return true;
+    if(value === this.state.selectedParty ||
+      value === this.state.selectedChamber ||
+      value === this.state.selectedCongress) return true;
     return false;
   }
 
   render() {
     const congressOptions = this.state.congress.map(c => {
       return (
-        <option key={c} value={c} >Congress {c}</option>
+        <div key={c}>
+          <input
+            type="radio"
+            name="congressOption"
+            id={c}
+            value={c}
+            onChange={this.handleCongressChange}
+            defaultChecked={this.isChecked(c)}>
+          </input>
+          <label>{c}</label>
+        </div>
       )
     })
     const chamberOptions = this.state.chambers.map(ch => {
@@ -127,9 +138,9 @@ class App extends Component {
         <div className="App">
           <h1> Congress Info </h1>
           <h3>select congress</h3>
-          <select onChange={this.handleCongressChange}>
+          <div>
             {congressOptions}
-          </select>
+          </div>
           <h3>select chamber</h3>
           <div>{chamberOptions}</div>
           <h3>select party</h3>
