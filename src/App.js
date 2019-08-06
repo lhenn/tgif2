@@ -15,11 +15,11 @@ class App extends Component {
   componentDidMount() {
     this.getData(this.state.selectedCongress, this.state.selectedChamber);
   }
-  getData = (congress, chamber, party) => {
+  getData = () => {
     this.setState({
       isLoading:true
     });
-    const propublicaURL = "https://api.propublica.org/congress/v1/" + congress + "/" + chamber + "/members.json";
+    const propublicaURL = "https://api.propublica.org/congress/v1/" + this.state.selectedCongress + "/" + this.state.selectedChamber + "/members.json";
     const propublicaAPIkey = 'E58FNEqHGDgcK00Ty0XoyVpupxkLQXMc3okUc8EU';
     fetch(propublicaURL, {
             method: "GET",
@@ -54,21 +54,21 @@ class App extends Component {
             selectedParty:"Total",
             isLoading:false
           });
-          console.log(this.state.parties);
         })
         .catch(error => console.log(error))
   }
   handleCongressChange = (e) => {
-    this.getData(e.target.value, this.state.selectedChamber);
     this.setState({
       selectedCongress:e.target.value
+    }, () => {
+      this.getData();
     });
-    console.log(e.target.value);
   }
   handleChamberChange = (e) => {
-    this.getData(this.state.selectedCongress, e.target.value);
     this.setState({
       selectedChamber:e.target.value
+    }, () => {
+      this.getData();
     });
   }
   handlePartyChange = (e) => {
@@ -146,6 +146,12 @@ class App extends Component {
           <h3>select party</h3>
           <div>{partyOptions}</div>
           <Histogram
+            dataType = 'loyalty'
+            totalMembers={this.state.parties.filter(p => p.name === "Total")[0]}
+            partyMembers={this.state.parties.filter(p => p.name === this.state.selectedParty)[0]}
+          />
+          <Histogram
+            dataType = 'attendance'
             totalMembers={this.state.parties.filter(p => p.name === "Total")[0]}
             partyMembers={this.state.parties.filter(p => p.name === this.state.selectedParty)[0]}
           />
