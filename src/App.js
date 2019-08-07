@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import './App.css';
 import Histogram from './components/Histogram.js'
+import Table from './components/Table.js'
 
 class App extends Component {
   state = {
@@ -154,6 +155,9 @@ class App extends Component {
             dataType = 'attendance'
             totalMembers={this.state.parties.filter(p => p.name === "Total")[0]}
             partyMembers={this.state.parties.filter(p => p.name === this.state.selectedParty)[0]}
+          />
+          <Table
+            members = {this.state.parties.filter(p => p.name === this.state.selectedParty)[0]}
           />
         </div>
       );
